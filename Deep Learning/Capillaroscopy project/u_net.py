@@ -1,3 +1,6 @@
+# The following model is being developed based on the article published by Ronneberger, Fischer and Brox
+# U-Net: Convolutional Networks for Biomedical Image Segmentation
+
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
