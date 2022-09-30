@@ -6,9 +6,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Input,Conv2D,Conv2DTranspose,MaxPooling2D,\
-                                    BatchNormalization,Dropout,Dense,CenterCrop,\
-                                    UpSampling2D,Layer
+from tensorflow.keras.layers import Input,InputLayer,Conv2D,Conv2DTranspose,\
+                                    MaxPooling2D,BatchNormalization,Dropout,\
+                                    Dense,CenterCrop,UpSampling2D,Layer
 
 def InputLayer(input_shape):
   return Input(input_shape)
@@ -24,14 +24,14 @@ def cmodel(input_layer,num_filters):
 # Expanding model
 def emodel(input_layer,num_filters):
   em1 = Conv2DTranspose(num_filters,(2,2),(2,2),padding='valid')(input_layer)
-  em2 = tf.concat([concat_layer,em1],1)  #otherwise, 2
+  em2 = tf.concat([concat_layer,em1],3)  #otherwise, 2
   em3 = Conv2D(num_filters,(3,3),activation='relu',padding='valid')(em2)
   out = Conv2D(num_filters,(3,3),activation='relu',padding='valid')(em3)
   return out
 
 ## U-Net
 # Contracting path
-in_layer = tf.expand_dims(InputLayer((572,572)),0)
+in_layer = tf.expand_dims(InputLayer((572,572)),3)
 x,t0 = cmodel(in_layer,64,(392,392))
 x,t1 = cmodel(x,128,(200,200))
 x,t2 = cmodel(x,256,(104,104))
