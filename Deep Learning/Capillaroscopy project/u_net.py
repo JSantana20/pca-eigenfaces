@@ -10,7 +10,6 @@ from tensorflow.keras.layers import Input,Conv2D,Conv2DTranspose,MaxPooling2D,\
                                     BatchNormalization,Dropout,Dense,CenterCrop,\
                                     UpSampling2D,Layer
 
-# U-Net
 def InputLayer(input_shape):
   return Input(input_shape)
 
@@ -18,24 +17,35 @@ def InputLayer(input_shape):
 def cmodel(input_layer,num_filters):
   cm1 = Conv2D(num_filters,(3,3),activation='relu',padding='valid')(input_layer)
   cm2 = Conv2D(num_filters,(3,3),activation='relu',padding='valid')(cm1)
+  crop = CenterCrop(crop_size[0],crop_size[1])(cm2)
   out = MaxPooling2D((2,2))(cm2)
-  return out
+  return out,crop
 
 # Expanding model
 def emodel(input_layer,num_filters):
-  em1 = UpSampling2D((2,2))(input_layer)
-  em2 = 
+  em1 = Conv2DTranspose(num_filters,(2,2),(2,2),padding='valid')(input_layer)
+  em2 = tf.concat([concat_layer,em1],1)  #otherwise, 2
+  em3 = Conv2D(num_filters,(3,3),activation='relu',padding='valid')(em2)
+  out = Conv2D(num_filters,(3,3),activation='relu',padding='valid')(em3)
+  return out
 
+## U-Net
 # Contracting path
 in_layer = tf.expand_dims(InputLayer((572,572)),0)
-x = cmodel(in_layer,64)
-x = cmodel(x,128)
-x = cmodel(x,256)
-x = cmodel(x,512)
+x,t0 = cmodel(in_layer,64,(392,392))
+x,t1 = cmodel(x,128,(200,200))
+x,t2 = cmodel(x,256,(104,104))
+x,t3 = cmodel(x,512,(56,56))
 x = Conv2D(1024,(3,3),activation='relu',padding='valid')(x)
-out_cpath = Conv2D(1024,(3,3),activation='relu',padding='valid')(x)
+x = Conv2D(1024,(3,3),activation='relu',padding='valid')(x)
 
-unet = Model(inputs=in_layer,outputs=out_cpath)
+# Expanding path
+x = emodel(x,t3,512)
+x = emodel(x,t2,256)
+x = emodel(x,t1,128)
+x = emodel(x,t0,64)
+out_layer = Conv2D(2,(1,1),padding='valid')(x)
+
+unet = Model(inputs=in_layer,outputs=out_layer)
 
 unet.summary()
-                                    
