@@ -5,3 +5,5 @@ is done manually at the moment and only by specially trained medical personnel.
 As a first step towards the development of this tool, the team plans for it to function as a pedagogical tool for medicine students.
 Going to a more technical field, the U-Net architecture is being implemented for the segmentation of capillaroscopy samples in order to obtain a binarized image that
 could provide key information about the presence of features such as tortuosities or avascular zones.
+
+Up to October the 4th, 2022, the net processes 256x256 RGB retinography images. Normalization layers will be added to improve performance, as well as "context" padding to enhance segmentation of features near the image's borders.
