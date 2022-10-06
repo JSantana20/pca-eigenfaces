@@ -19,7 +19,7 @@ from tensorflow.keras.layers import Input,InputLayer,Conv2D,Conv2DTranspose,\
                                     Activation
 from tensorflow.keras.callbacks import ModelCheckpoint,EarlyStopping,ReduceLROnPlateau,Callback
 
-# Res U-Net
+# Residual block
 def ResNet(input):
   r1 = Conv2D(input.shape[3],(3,3),padding='same')(input)
   r1 = BatchNormalization()(r1)
@@ -48,3 +48,23 @@ def emodel(input_layer,concat_layer,num_filters):
   em4 = ResNet(em3)
   out = Conv2D(num_filters,(3,3),activation='relu',padding='same')(em4)
   return out
+
+# U-Net
+# Encoder
+in_layer = Input((256,256,3))
+x,t0 = cmodel(in_layer,64)
+x,t1 = cmodel(x,128)
+x,t2 = cmodel(x,256)
+x,t3 = cmodel(x,512)
+x = Conv2D(1024,(3,3),activation='relu',padding='same')(x)
+x = Conv2D(1024,(3,3),activation='relu',padding='same')(x)
+
+# Decoder
+x = emodel(x,t3,512)
+x = emodel(x,t2,256)
+x = emodel(x,t1,128)
+x = emodel(x,t0,64)
+out_layer = Conv2D(1,(1,1),activation='sigmoid',padding='same')(x)  #switch back filters to 2
+
+unet = Model(inputs=in_layer,outputs=out_layer)
+unet.summary()
